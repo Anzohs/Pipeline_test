@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EXECUTABLE: main   # change this to your executable name if different
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install @42school/norminette (repo script)
+        run: bash ./scripts/install_norminette.sh
+
+      - name: Build (make) (repo script)
+        run: bash ./scripts/build.sh
+
+      - name: Install valgrind (repo script)
+        run: bash ./scripts/install_valgrind.sh
+
+      - name: Run program under valgrind (repo script)
+        run: bash ./scripts/run_valgrind.sh
+
+      - name: Collect artifacts using repository script
+        if: always()
+        run: bash ./scripts/collect_artifacts.sh
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: artifacts
